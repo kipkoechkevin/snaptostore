@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-
+import '../constants/business_types.dart'; // ✅ Import shared enum
 
 class AppColors {
-  // Primary Brand Colors
+// Primary Brand Colors
 static const Color primary = Color(0xFF6B46C1); // Purple
 static const Color primaryLight = Color(0xFF8B5CF6);
 static const Color primaryDark = Color(0xFF553C9A);
@@ -55,15 +55,7 @@ static const Color beautyBoss = Color(0xFFEC4899);
 static const Color handmadeBoss = Color(0xFF10B981);
 }
 
-// Business Type Color Schemes
-enum BusinessType {
-thrift,
-boutique,
-beauty,
-handmade,
-general,
-}
-
+// Custom Color Scheme for easy customization
 class BusinessColorScheme {
 final String name;
 final Color primary;
@@ -83,7 +75,35 @@ const BusinessColorScheme({
   required this.type,
 });
 
-static const thriftBoss = BusinessColorScheme(
+// Helper method for opacity gradients
+LinearGradient createOpacityGradient({
+  double startOpacity = 0.1,
+  double endOpacity = 0.05,
+  AlignmentGeometry begin = Alignment.topLeft,
+  AlignmentGeometry end = Alignment.bottomRight,
+}) {
+  return LinearGradient(
+    begin: begin,
+    end: end,
+    colors: [
+      primary.withOpacity(startOpacity),
+      primary.withOpacity(endOpacity),
+    ],
+  );
+}
+
+// Predefined color schemes
+static const BusinessColorScheme defaultScheme = BusinessColorScheme(
+  name: 'Default',
+  primary: AppColors.primary,
+  secondary: Color(0xFFEDE9FE),
+  accent: AppColors.accent,
+  gradient: AppColors.primaryGradient,
+  surface: AppColors.surface,
+  type: BusinessType.general,
+);
+
+static const BusinessColorScheme thriftBoss = BusinessColorScheme(
   name: 'Thrift Boss',
   primary: Color(0xFF7C3AED),
   secondary: Color(0xFFDDD6FE),
@@ -95,7 +115,7 @@ static const thriftBoss = BusinessColorScheme(
   type: BusinessType.thrift,
 );
 
-static const boutiqueBoss = BusinessColorScheme(
+static const BusinessColorScheme boutiqueBoss = BusinessColorScheme(
   name: 'Boutique Boss',
   primary: Color(0xFF06B6D4),
   secondary: Color(0xFFCFFAFE),
@@ -107,7 +127,7 @@ static const boutiqueBoss = BusinessColorScheme(
   type: BusinessType.boutique,
 );
 
-static const beautyBoss = BusinessColorScheme(
+static const BusinessColorScheme beautyBoss = BusinessColorScheme(
   name: 'Beauty Boss',
   primary: Color(0xFFEC4899),
   secondary: Color(0xFFFCE7F3),
@@ -119,7 +139,7 @@ static const beautyBoss = BusinessColorScheme(
   type: BusinessType.beauty,
 );
 
-static const handmadeBoss = BusinessColorScheme(
+static const BusinessColorScheme handmadeBoss = BusinessColorScheme(
   name: 'Handmade Boss',
   primary: Color(0xFF10B981),
   secondary: Color(0xFFD1FAE5),
@@ -131,16 +151,6 @@ static const handmadeBoss = BusinessColorScheme(
   type: BusinessType.handmade,
 );
 
-static const defaultScheme = BusinessColorScheme(
-  name: 'Default',
-  primary: AppColors.primary,
-  secondary: Color(0xFFEDE9FE),
-  accent: AppColors.accent,
-  gradient: AppColors.primaryGradient,
-  surface: AppColors.surface,
-  type: BusinessType.general,
-);
-
 static List<BusinessColorScheme> get allSchemes => [
   defaultScheme,
   thriftBoss,
@@ -149,5 +159,3 @@ static List<BusinessColorScheme> get allSchemes => [
   handmadeBoss,
 ];
 }
-
-

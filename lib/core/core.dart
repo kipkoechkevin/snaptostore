@@ -8,3 +8,6 @@ export 'config/env_config.dart';
 
 // Services
 export 'services/supabase_service.dart';
+
+//Constants
+export 'constants/business_types.dart';
