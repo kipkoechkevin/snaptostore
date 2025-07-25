@@ -5,6 +5,7 @@ import '../../../core/core.dart';
 import '../presentation/providers/camera_provider.dart';
 import '../presentation/widgets/camera_controls.dart';
 import '../presentation/widgets/camera_overlay.dart';
+import '../../background_removal/presentation/background_removal_screen.dart';
 
 class CameraScreen extends ConsumerStatefulWidget {
 const CameraScreen({super.key});
@@ -174,15 +175,27 @@ IconData _getFlashIcon(FlashMode flashMode) {
   }
 }
 
+// Update the _capturePhoto method:
 Future<void> _capturePhoto() async {
-  try {
-    await ref.read(cameraProvider.notifier).capturePhoto();
-    // Navigate to photo editing screen
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to capture photo: $e')),
+try {
+  await ref.read(cameraProvider.notifier).capturePhoto();
+  
+  final cameraState = ref.read(cameraProvider);
+  if (cameraState.capturedImagePath != null && mounted) {
+    // Navigate to background removal screen
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BackgroundRemovalScreen(
+          imagePath: cameraState.capturedImagePath!,
+        ),
+      ),
     );
   }
+} catch (e) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Failed to capture photo: $e')),
+  );
+}
 }
 
 void _openGallery() {
