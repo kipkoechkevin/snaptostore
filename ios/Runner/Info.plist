@@ -50,5 +50,14 @@
 	<string>This app needs camera access to capture product photos for listings</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs photo library access to select product images</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>instagram</string>
+		<string>fb</string>
+		<string>facebook</string>
+		<string>pinterest</string>
+		<string>twitter</string>
+		<string>whatsapp</string>
+	</array>
 </dict>
 </plist>

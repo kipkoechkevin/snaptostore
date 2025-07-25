@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/core.dart';
+import '../../../social_sharing/presentation/social_share_screen.dart';
 import '../../domain/models/background_removal_result.dart';
 
 class BottomActionBar extends ConsumerWidget {
@@ -84,10 +85,19 @@ Widget build(BuildContext context, WidgetRef ref) {
 
             const SizedBox(width: 12),
 
-            // Share button
+            // Share button - Updated to navigate to social share screen
             _ActionButton(
               icon: Icons.share_outlined,
-              onTap: onShare,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => SocialShareScreen(
+                      imagePath: result.processedImagePath,
+                      defaultCaption: 'Check out my latest creation! ✨',
+                    ),
+                  ),
+                );
+              },
               backgroundColor: colorScheme.secondary.withOpacity(0.1),
               iconColor: colorScheme.secondary,
               tooltip: 'Share',
