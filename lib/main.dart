@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/core.dart';
-import 'core/config/env_config.dart';
 import 'features/auth/presentation/pages/auth_wrapper.dart';
 
 void main() async {
