@@ -7,7 +7,6 @@ import 'widgets/template_collection_card.dart';
 import 'widgets/template_grid.dart';
 import 'widgets/template_filter_bar.dart';
 import 'widgets/featured_templates_section.dart';
-import '../../../../core/constants/business_types.dart';
 
 class TemplateBrowserScreen extends ConsumerStatefulWidget {
 final BusinessType? initialBusinessType;

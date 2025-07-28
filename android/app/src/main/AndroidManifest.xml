@@ -8,6 +8,9 @@
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
   
     <application
+        android:requestLegacyExternalStorage="true"
+        android:hardwareAccelerated="true"
+        android:largeHeap="true"
         android:label="snaptostore"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
@@ -37,7 +40,7 @@
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
             android:name="flutterEmbedding"
-            android:value="2" />
+            android:value="2" />   
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

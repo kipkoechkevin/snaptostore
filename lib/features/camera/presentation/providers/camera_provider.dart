@@ -3,12 +3,18 @@ import 'package:camera/camera.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'dart:io';
 import '../../domain/models/camera_state.dart';
 
 class CameraNotifier extends StateNotifier<CameraState> {
 CameraNotifier() : super(const CameraState());
 
+bool _isCapturing = false;
+bool _isDisposing = false;
+
 Future<void> initializeCamera() async {
+  if (_isDisposing) return;
+  
   try {
     // Request camera permission
     final hasPermission = await _requestCameraPermission();
@@ -49,18 +55,38 @@ Future<bool> _requestCameraPermission() async {
 }
 
 Future<void> _initializeController() async {
+  if (_isDisposing) return;
+  
   try {
     final cameras = state.availableCameras;
     if (cameras.isEmpty) return;
 
+    // ✅ Dispose existing controller with proper cleanup
+    await _safeDisposeController();
+
+    // ✅ Add delay to ensure proper disposal
+    await Future.delayed(const Duration(milliseconds: 500));
+
     final controller = CameraController(
       cameras[state.selectedCameraIndex],
-      ResolutionPreset.high,
+      ResolutionPreset.medium, // ✅ Keep medium resolution
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
 
-    await controller.initialize();
+    // ✅ Initialize with timeout
+    await controller.initialize().timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {
+        throw Exception('Camera initialization timeout');
+      },
+    );
+
+    if (_isDisposing) {
+      await controller.dispose();
+      return;
+    }
+
     await controller.setFlashMode(state.flashMode);
 
     state = state.copyWith(
@@ -75,37 +101,94 @@ Future<void> _initializeController() async {
   }
 }
 
-Future<void> capturePhoto() async {
-  if (!state.isInitialized || state.controller == null) return;
+Future<void> _safeDisposeController() async {
+  final controller = state.controller;
+  if (controller != null) {
+    try {
+      if (controller.value.isInitialized) {
+        await controller.dispose();
+      }
+    } catch (e) {
+      print('Error disposing controller: $e');
+    }
+  }
+  
+  // ✅ Force garbage collection
+  await Future.delayed(const Duration(milliseconds: 100));
+}
 
+Future<void> capturePhoto() async {
+  // ✅ Multiple checks to prevent simultaneous captures
+  if (_isCapturing || 
+      _isDisposing ||
+      !state.isInitialized || 
+      state.controller == null || 
+      state.isCapturing ||
+      !state.controller!.value.isInitialized) {
+    print('Capture blocked: _isCapturing=$_isCapturing, _isDisposing=$_isDisposing, isInitialized=${state.isInitialized}');
+    return;
+  }
+
+  _isCapturing = true;
   state = state.copyWith(isCapturing: true, error: null);
 
   try {
-    final image = await state.controller!.takePicture();
+    // ✅ Ensure controller is ready
+    await Future.delayed(const Duration(milliseconds: 200));
     
-    // Save to app directory
-    final directory = await getApplicationDocumentsDirectory();
-    final imagePath = path.join(
-      directory.path,
-      'snaptostore_${DateTime.now().millisecondsSinceEpoch}.jpg',
+    if (_isDisposing || !state.controller!.value.isInitialized) {
+      throw Exception('Camera not ready for capture');
+    }
+
+    // ✅ Capture with timeout
+    final image = await state.controller!.takePicture().timeout(
+      const Duration(seconds: 15),
+      onTimeout: () {
+        throw Exception('Capture timeout');
+      },
     );
     
-    await image.saveTo(imagePath);
+    // ✅ Save to app directory with unique filename
+    final directory = await getApplicationDocumentsDirectory();
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final imagePath = path.join(
+      directory.path,
+      'snaptostore_$timestamp.jpg',
+    );
+    
+    // ✅ Save with error handling
+    await image.saveTo(imagePath).timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {
+        throw Exception('Save timeout');
+      },
+    );
+
+    // ✅ Verify file was created
+    final file = File(imagePath);
+    if (!await file.exists()) {
+      throw Exception('Failed to save image file');
+    }
 
     state = state.copyWith(
       isCapturing: false,
       capturedImagePath: imagePath,
     );
+    
+    print('Photo captured successfully: $imagePath');
   } catch (e) {
+    print('Capture error: $e');
     state = state.copyWith(
       isCapturing: false,
       error: 'Failed to capture photo: $e',
     );
+  } finally {
+    _isCapturing = false;
   }
 }
 
 Future<void> toggleFlash() async {
-  if (!state.isInitialized || state.controller == null) return;
+  if (!state.isInitialized || state.controller == null || _isDisposing) return;
 
   FlashMode newMode;
   switch (state.flashMode) {
@@ -132,20 +215,49 @@ Future<void> toggleFlash() async {
 }
 
 Future<void> switchCamera() async {
-  if (state.availableCameras.length < 2) return;
+  if (state.availableCameras.length < 2 || _isDisposing) return;
 
   final newIndex = state.selectedCameraIndex == 0 ? 1 : 0;
   
-  // Dispose current controller
-  await state.controller?.dispose();
+  // ✅ Properly dispose current controller
+  await _safeDisposeController();
   
   state = state.copyWith(
     selectedCameraIndex: newIndex,
     isInitialized: false,
     controller: null,
+    isCapturing: false,
   );
 
-  await _initializeController();
+  // ✅ Add delay before reinitializing
+  await Future.delayed(const Duration(milliseconds: 1000));
+  
+  if (!_isDisposing) {
+    await _initializeController();
+  }
+}
+
+Future<void> disposeCamera() async {
+  _isDisposing = true;
+  _isCapturing = false;
+  
+  await _safeDisposeController();
+  
+  state = state.copyWith(
+    controller: null,
+    isInitialized: false,
+    isCapturing: false,
+    capturedImagePath: null,
+  );
+  
+  print('Camera disposed');
+}
+
+Future<void> reinitializeCamera() async {
+  await disposeCamera();
+  _isDisposing = false;
+  await Future.delayed(const Duration(milliseconds: 1000));
+  await initializeCamera();
 }
 
 void clearError() {
@@ -158,6 +270,7 @@ void clearCapturedImage() {
 
 @override
 void dispose() {
+  _isDisposing = true;
   state.controller?.dispose();
   super.dispose();
 }

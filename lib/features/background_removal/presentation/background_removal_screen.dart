@@ -61,13 +61,16 @@ void initState() {
     curve: Curves.easeOut,
   ));
 
+  // ✅ Set up selected background but don't process yet
+  _selectedBackground = BackgroundOption.defaultOptions.first;
+
+  // ✅ Use addPostFrameCallback to process after build is complete
   WidgetsBinding.instance.addPostFrameCallback((_) {
     _fadeController.forward();
+    
+    // ✅ Process image after the widget tree is built
+    _processImage();
   });
-
-  // Auto-start with transparent background
-  _selectedBackground = BackgroundOption.defaultOptions.first;
-  _processImage();
 }
 
 @override
@@ -80,10 +83,13 @@ void dispose() {
 void _processImage() {
   if (_selectedBackground == null) return;
 
-  ref.read(backgroundRemovalProvider.notifier).processImage(
-    imagePath: widget.imagePath,
-    backgroundOption: _selectedBackground!,
-  );
+  // ✅ Wrap provider modification in Future to ensure it's outside build cycle
+  Future(() {
+    ref.read(backgroundRemovalProvider.notifier).processImage(
+      imagePath: widget.imagePath,
+      backgroundOption: _selectedBackground!,
+    );
+  });
 }
 
 void _toggleBackgroundOptions() {
@@ -203,6 +209,72 @@ Widget build(BuildContext context) {
               onSave: () => _saveImage(),
               onShare: () => _shareImage(),
               onRetry: () => _processImage(),
+            ),
+          ),
+
+        // ✅ Add error handling overlay
+        if (backgroundState.error != null)
+          Container(
+            color: Colors.black.withOpacity(0.7),
+            child: Center(
+              child: Container(
+                margin: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: AppColors.error,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Processing Failed',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      backgroundState.error!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // ✅ Clear error and retry
+                              Future(() {
+                                ref.read(backgroundRemovalProvider.notifier).clearError();
+                                _processImage();
+                              });
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
       ],
@@ -333,7 +405,7 @@ Widget _buildBackgroundToggle(BusinessColorScheme colorScheme) {
                   ),
                 ),
                 child: _selectedBackground?.type == BackgroundType.transparent
-                    ? Icon(
+                    ? const Icon(
                         Icons.grid_on,
                         color: AppColors.textSecondary,
                         size: 16,

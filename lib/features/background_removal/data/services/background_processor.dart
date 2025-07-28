@@ -15,66 +15,82 @@ final RemoveBgService _removeBgService;
 BackgroundProcessor() : _removeBgService = RemoveBgService();
 
 Future<BackgroundRemovalResult> processImage({
-  required String imagePath,
-  required BackgroundOption backgroundOption,
+required String imagePath,
+required BackgroundOption backgroundOption,
 }) async {
-  final stopwatch = Stopwatch()..start();
+final stopwatch = Stopwatch()..start();
+
+try {
+  print('Starting background processing...');
   
-  try {
-    // Step 1: Remove background
-    final removeBgResult = await _removeBgService.removeBackground(
-      imagePath: imagePath,
-    );
-    
-    if (!removeBgResult.success) {
-      return BackgroundRemovalResult(
-        originalImagePath: imagePath,
-        processedImagePath: '',
-        backgroundType: backgroundOption.type,
-        processingTimeMs: stopwatch.elapsedMilliseconds,
-        isSuccess: false,
-        error: removeBgResult.error,
-      );
-    }
-    
-    // Step 2: Save background-removed image
-    final transparentImagePath = await _removeBgService.saveProcessedImage(
-      removeBgResult.imageData!,
-    );
-    
-    // Step 3: Apply new background if needed
-    String finalImagePath = transparentImagePath;
-    
-    if (backgroundOption.type != BackgroundType.transparent) {
-      finalImagePath = await _applyBackground(
-        transparentImagePath,
-        backgroundOption,
-      );
-    }
-    
-    stopwatch.stop();
-    
-    return BackgroundRemovalResult(
-      originalImagePath: imagePath,
-      processedImagePath: finalImagePath,
-      backgroundType: backgroundOption.type,
-      backgroundColor: backgroundOption.color,
-      backgroundImagePath: backgroundOption.imagePath,
-      processingTimeMs: stopwatch.elapsedMilliseconds,
-      isSuccess: true,
-    );
-    
-  } catch (e) {
-    stopwatch.stop();
+  // ✅ Cleanup old files first
+  await _removeBgService.cleanupTempFiles();
+  
+  // ✅ Add delay to ensure camera resources are freed
+  await Future.delayed(const Duration(milliseconds: 200));
+  
+  // Step 1: Remove background
+  final removeBgResult = await _removeBgService.removeBackground(
+    imagePath: imagePath,
+  );
+  
+  if (!removeBgResult.success) {
     return BackgroundRemovalResult(
       originalImagePath: imagePath,
       processedImagePath: '',
       backgroundType: backgroundOption.type,
       processingTimeMs: stopwatch.elapsedMilliseconds,
       isSuccess: false,
-      error: e.toString(),
+      error: removeBgResult.error,
     );
   }
+  
+  // ✅ Add delay between operations
+  await Future.delayed(const Duration(milliseconds: 100));
+  
+  // Step 2: Save background-removed image
+  final transparentImagePath = await _removeBgService.saveProcessedImage(
+    removeBgResult.imageData!,
+  );
+  
+  // ✅ Add delay before background application
+  await Future.delayed(const Duration(milliseconds: 100));
+  
+  // Step 3: Apply new background if needed
+  String finalImagePath = transparentImagePath;
+  
+  if (backgroundOption.type != BackgroundType.transparent) {
+    finalImagePath = await _applyBackground(
+      transparentImagePath,
+      backgroundOption,
+    );
+  }
+  
+  stopwatch.stop();
+  print('Background processing completed in ${stopwatch.elapsedMilliseconds}ms');
+  
+  return BackgroundRemovalResult(
+    originalImagePath: imagePath,
+    processedImagePath: finalImagePath,
+    backgroundType: backgroundOption.type,
+    backgroundColor: backgroundOption.color,
+    backgroundImagePath: backgroundOption.imagePath,
+    processingTimeMs: stopwatch.elapsedMilliseconds,
+    isSuccess: true,
+  );
+  
+} catch (e) {
+  stopwatch.stop();
+  print('Background processing error: $e');
+  return BackgroundRemovalResult(
+    originalImagePath: imagePath,
+    processedImagePath: '',
+    backgroundType: backgroundOption.type,
+    processingTimeMs: stopwatch.elapsedMilliseconds,
+    isSuccess: false,
+    error: e.toString(),
+  );
+}
 }
 
 Future<String> _applyBackground(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/core.dart';
 import '../../camera/presentation/camera_screen.dart';
 import '../../templates/presentation/template_browser_screen.dart';
+import '../../projects/presentation/projects_screen.dart';
 
 class QuickActionsGrid extends ConsumerWidget {
 const QuickActionsGrid({super.key});
@@ -81,9 +82,11 @@ Widget build(BuildContext context, WidgetRef ref) {
               colors: [Color(0xFF10B981), Color(0xFF34D399)],
             ),
             onTap: () {
-              // TODO: Navigate to projects
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Projects screen coming soon!')),
+              // ✅ Replace the TODO with actual navigation
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ProjectsScreen(),
+                ),
               );
             },
           ),
@@ -94,6 +97,7 @@ Widget build(BuildContext context, WidgetRef ref) {
 }
 }
 
+// _ActionCard class remains the same...
 class _ActionCard extends StatelessWidget {
 final String title;
 final String subtitle;

@@ -37,8 +37,9 @@ Widget build(BuildContext context, WidgetRef ref) {
     ),
     child: Row(
       children: [
-        // Processing info
+        // Processing info - Made more flexible
         Expanded(
+          flex: 3, // ✅ Give more weight to the text section
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -51,11 +52,14 @@ Widget build(BuildContext context, WidgetRef ref) {
                     size: 16,
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    'Processed in ${result.processingTimeMs}ms',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.success,
-                      fontWeight: FontWeight.w600,
+                  Flexible( // ✅ Make text flexible
+                    child: Text(
+                      'Processed in ${result.processingTimeMs}ms',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      overflow: TextOverflow.ellipsis, // ✅ Handle overflow
                     ),
                   ),
                 ],
@@ -66,91 +70,98 @@ Widget build(BuildContext context, WidgetRef ref) {
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.textSecondary,
                 ),
+                overflow: TextOverflow.ellipsis, // ✅ Handle overflow
               ),
             ],
           ),
         ),
 
-        // Action buttons
-        Row(
-          children: [
-            // Retry button
-            _ActionButton(
-              icon: Icons.refresh,
-              onTap: onRetry,
-              backgroundColor: AppColors.surfaceVariant,
-              iconColor: AppColors.textSecondary,
-              tooltip: 'Retry',
-            ),
+        const SizedBox(width: 12), // ✅ Add spacing between sections
 
-            const SizedBox(width: 12),
-
-            // Share button - Updated to navigate to social share screen
-            _ActionButton(
-              icon: Icons.share_outlined,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => SocialShareScreen(
-                      imagePath: result.processedImagePath,
-                      defaultCaption: 'Check out my latest creation! ✨',
-                    ),
-                  ),
-                );
-              },
-              backgroundColor: colorScheme.secondary.withOpacity(0.1),
-              iconColor: colorScheme.secondary,
-              tooltip: 'Share',
-            ),
-
-            const SizedBox(width: 12),
-
-            // Save button
-            Container(
-              decoration: BoxDecoration(
-                gradient: colorScheme.gradient,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.primary.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+        // Action buttons - Made more compact
+        Flexible( // ✅ Make buttons flexible instead of fixed
+          flex: 2,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              // Retry button
+              _ActionButton(
+                icon: Icons.refresh,
+                onTap: onRetry,
+                backgroundColor: AppColors.surfaceVariant,
+                iconColor: AppColors.textSecondary,
+                tooltip: 'Retry',
               ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
-                  onTap: onSave,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
+
+              const SizedBox(width: 8), // ✅ Reduced spacing
+
+              // Share button
+              _ActionButton(
+                icon: Icons.share_outlined,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => SocialShareScreen(
+                        imagePath: result.processedImagePath,
+                        defaultCaption: 'Check out my latest creation! ✨',
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.download_rounded,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Save',
-                          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  );
+                },
+                backgroundColor: colorScheme.secondary.withOpacity(0.1),
+                iconColor: colorScheme.secondary,
+                tooltip: 'Share',
+              ),
+
+              const SizedBox(width: 8), // ✅ Reduced spacing
+
+              // Save button - Made more compact
+              Container(
+                decoration: BoxDecoration(
+                  gradient: colorScheme.gradient,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.primary.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: onSave,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16, // ✅ Reduced horizontal padding
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.download_rounded,
                             color: Colors.white,
-                            fontWeight: FontWeight.w600,
+                            size: 18,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 6), // ✅ Reduced spacing
+                          Text(
+                            'Save',
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     ),
@@ -193,8 +204,8 @@ Widget build(BuildContext context) {
   return Tooltip(
     message: tooltip,
     child: Container(
-      width: 44,
-      height: 44,
+      width: 40, // ✅ Reduced from 44 to 40
+      height: 40, // ✅ Reduced from 44 to 40
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(12),

@@ -87,65 +87,75 @@ Widget build(BuildContext context) {
                       Expanded(
                         flex: 2,
                         child: Padding(
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.all(20), // ✅ Reduced padding
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ Changed from center
                             children: [
-                              // Title and badges
-                              Row(
+                              // Title and badges section
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: Text(
-                                      widget.collection.name,
-                                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w700,
+                                  // Title and badges
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          widget.collection.name,
+                                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 16, // ✅ Reduced font size
+                                          ),
+                                          maxLines: 1, // ✅ Added maxLines
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                       ),
-                                    ),
+                                      // Badges
+                                      if (widget.collection.isNew) ...[
+                                        const SizedBox(width: 6), // ✅ Reduced spacing
+                                        _buildBadge('NEW', AppColors.success),
+                                      ],
+                                      if (widget.collection.isPremium) ...[
+                                        const SizedBox(width: 6), // ✅ Reduced spacing
+                                        _buildBadge('PRO', AppColors.warning),
+                                      ],
+                                    ],
                                   ),
-                                  if (widget.collection.isNew) ...[
-                                    const SizedBox(width: 8),
-                                    _buildBadge('NEW', AppColors.success),
-                                  ],
-                                  if (widget.collection.isPremium) ...[
-                                    const SizedBox(width: 8),
-                                    _buildBadge('PRO', AppColors.warning),
-                                  ],
+                                  
+                                  const SizedBox(height: 4), // ✅ Reduced height
+                                  
+                                  // Description
+                                  Text(
+                                    widget.collection.description,
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontSize: 12, // ✅ Reduced font size
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ],
                               ),
                               
-                              const SizedBox(height: 8),
-                              
-                              // Description
-                              Text(
-                                widget.collection.description,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.white.withOpacity(0.9),
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              
-                              const Spacer(),
-                              
-                              // Template count
+                              // Template count (bottom section)
                               Row(
                                 children: [
                                   Icon(
                                     Icons.collections_outlined,
                                     color: Colors.white.withOpacity(0.8),
-                                    size: 16,
+                                    size: 14, // ✅ Reduced icon size
                                   ),
-                                  const SizedBox(width: 6),
+                                  const SizedBox(width: 4), // ✅ Reduced spacing
                                   Text(
                                     '${widget.collection.templateCount} templates',
                                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                                       color: Colors.white.withOpacity(0.8),
                                       fontWeight: FontWeight.w500,
+                                      fontSize: 11, // ✅ Reduced font size
                                     ),
                                   ),
-                                   ],
+                                ],
                               ),
                             ],
                           ),
@@ -183,7 +193,7 @@ Widget build(BuildContext context) {
                                       color: Colors.white.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: Icon(
+                                    child: const Icon(
                                       Icons.arrow_forward_ios,
                                       color: Colors.white,
                                       size: 12,
@@ -209,17 +219,17 @@ Widget build(BuildContext context) {
 
 Widget _buildBadge(String text, Color color) {
   return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), // ✅ Reduced padding
     decoration: BoxDecoration(
       color: color,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(10),
     ),
     child: Text(
       text,
       style: Theme.of(context).textTheme.labelSmall?.copyWith(
         color: Colors.white,
         fontWeight: FontWeight.bold,
-        fontSize: 10,
+        fontSize: 9, // ✅ Reduced font size
       ),
     ),
   );
@@ -244,14 +254,15 @@ Widget _buildTemplatePreview() {
           Icon(
             _getBusinessIcon(widget.collection.businessType),
             color: Colors.white.withOpacity(0.8),
-            size: 32,
+            size: 28, // ✅ Reduced icon size
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6), // ✅ Reduced spacing
           Text(
             '${widget.collection.templateCount}',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w700,
+              fontSize: 16, // ✅ Reduced font size
             ),
           ),
         ],
