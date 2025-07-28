@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/core.dart';
 import '../providers/template_provider.dart';
-import '../widgets/template_detail_screen.dart';
+import '../template_detail_screen.dart';
 import '../../../../core/constants/business_types.dart';
 
 
