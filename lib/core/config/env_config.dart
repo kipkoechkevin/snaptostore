@@ -22,4 +22,28 @@ static void validate() {
     print('Warning: Remove.bg API key not configured. Background removal will be disabled.');
   }
 }
+// Flutterwave Configuration
+static const String flutterwavePublicKey = String.fromEnvironment(
+  'FLUTTERWAVE_PUBLIC_KEY',
+  defaultValue: 'FLWPUBK_TEST-your-key-here',
+);
+
+static const String flutterwaveSecretKey = String.fromEnvironment(
+  'FLUTTERWAVE_SECRET_KEY', 
+  defaultValue: 'FLWSECK_TEST-your-key-here',
+);
+
+static const String flutterwaveEncryptionKey = String.fromEnvironment(
+  'FLUTTERWAVE_ENCRYPTION_KEY',
+  defaultValue: 'FLWSECK_TEST-your-encryption-key-here',
+);
+
+// RevenueCat Configuration
+static const String revenueCatApiKey = String.fromEnvironment(
+  'REVENUECAT_API_KEY',
+  defaultValue: 'your-revenuecat-api-key-here',
+);
+
+static const bool isDebug = bool.fromEnvironment('dart.vm.product') == false;
+
 }
